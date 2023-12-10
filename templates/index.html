@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Recommendation</title>
+</head>
+<body>
+    <h1>Food Recommendations for you</h1>
+    <!-- <h1>Food Recommendations for User {{ random_user_id }}</h1> -->
+
+    {% if recommendations %}
+        <ul>
+            {% for recommendation in recommendations %}
+                <li>
+                    <h3>{{ recommendation.title }}</h3>
+                    {% if recommendation.image_url %}
+                        <img src="{{ recommendation.image_url }}" alt="{{ recommendation.title }}" width="200">
+                    {% else %}
+                        <p>No image available</p>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No recommendations available.</p>
+    {% endif %}
+</body>
+</html>
