@@ -32,31 +32,26 @@ user_ids = Reviews.batch(1_000).map(lambda x: x["AuthorId"])
 unique_food_titles = np.unique(np.concatenate(list(food_titles)))
 unique_user_ids = np.unique(np.concatenate(list(user_ids)))
 
-# Inisialisasi model tanpa memuat bobot
 model = FoodModel(rating_weight=1.0,
                   retrieval_weight=1.0,
                   unique_user_ids=unique_user_ids,
                   unique_food_titles=unique_food_titles,
                   Recipes=Recipes)
 
-# Bangun model dengan memanggil pada input dummy
 dummy_input = {
     "AuthorId": [str(unique_user_ids[0])],
     "Name": [str(unique_food_titles[0])],
-    "Rating": [0.0]  # Tidak perlu diubah ke string
+    "Rating": [0.0] 
 }
 
 for key in dummy_input:
     dummy_input[key] = tf.constant(dummy_input[key], dtype=tf.string if key != "Rating" else tf.float32)
 
-# Panggil model untuk membangun struktur internal
 model(dummy_input)
 
-# Muat bobot setelah model dibangun
 model.load_weights('model/food_recommendation_model.h5')
 
 
-# Function to recommend food for a given user
 def recommend_food_for_random_user(model, recipe_df, top_n=5):
     random_user_id = df_reviews['AuthorId'].sample(1).values[0] # Pilih secara acak dari unique_user_ids
     index = tfrs.layers.factorized_top_k.BruteForce(model.user_model)
@@ -82,8 +77,6 @@ def get_image_url(recipe_df, recipe_name, image_column='Images'):
 @app.route('/', methods=['GET', 'POST'])
 def home():
     recommendations = []
-
-    # Call the function to recommend food for a random user
     recommended_titles, random_user_id = recommend_food_for_random_user(model, df_recipes, top_n=5)
 
     for i, title in enumerate(recommended_titles):
