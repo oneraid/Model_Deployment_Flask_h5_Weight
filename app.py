@@ -1,4 +1,3 @@
-#app.py
 from flask import Flask, request, jsonify, render_template
 from food_model import FoodModel
 
