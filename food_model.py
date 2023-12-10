@@ -1,4 +1,3 @@
-#food_model.py
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
 import numpy as np
@@ -22,16 +21,11 @@ class FoodModel(tfrs.models.Model):
                 vocabulary=unique_user_ids, mask_token=None),
             tf.keras.layers.Embedding(len(unique_user_ids) + 1, embedding_dimension)
         ])
-
-        # We can make this as complicated as we want as long as we output a scalar
-        # as our prediction.
         self.rating_model = tf.keras.Sequential([
             tf.keras.layers.Dense(256, activation="relu"),
             tf.keras.layers.Dense(128, activation="relu"),
             tf.keras.layers.Dense(1),
         ])
-
-        # The tasks.
         self.rating_task: tf.keras.layers.Layer = tfrs.tasks.Ranking(
             loss=tf.keras.losses.MeanSquaredError(),
             metrics=[tf.keras.metrics.RootMeanSquaredError()],
@@ -41,8 +35,6 @@ class FoodModel(tfrs.models.Model):
                 candidates=Recipes.batch(128).map(self.food_model)
             )
         )
-
-        # The loss weights.
         self.rating_weight = rating_weight
         self.retrieval_weight = retrieval_weight
 
@@ -53,7 +45,7 @@ class FoodModel(tfrs.models.Model):
         return (
             user_embeddings,
             food_embeddings,
-            # We apply the multi-layered rating model to a concatenation of
+
             self.rating_model(
                 tf.concat([user_embeddings, food_embeddings], axis=1)
             ),
@@ -65,13 +57,11 @@ class FoodModel(tfrs.models.Model):
 
         user_embeddings, food_embeddings, rating_predictions = self(features)
 
-        # We compute the loss for each task.
         rating_loss = self.rating_task(
             labels=ratings,
             predictions=rating_predictions,
         )
         retrieval_loss = self.retrieval_task(user_embeddings, food_embeddings)
-
-        # And combine them using the loss weights.
+        
         return (self.rating_weight * rating_loss
                 + self.retrieval_weight * retrieval_loss)
